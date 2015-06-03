@@ -39,7 +39,7 @@ int MST::find_connect(int x) {
 		vertices[x].connect = find_connect(vertices[x].connect);
 	return vertices[x].connect;
 }
-
+//Kruscal算法，将生成的边存入tree_edges中
 void MST::Kruscal() {
 	//使用并查集来进行连通分量的查找
     for (int i = 0; i < vertices.size(); i++)
@@ -60,4 +60,10 @@ void MST::Kruscal() {
     	if (tree_edges.size() == vertices.size() - 1)
     		break;
     }
+}
+
+void MST::clean() {
+	vertices.clear();
+	edges.clear();
+	tree_edges.clear();
 }

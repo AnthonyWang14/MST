@@ -24,6 +24,38 @@ std::vector<Point> vertices;
 int global_w, global_h;
 int mst_state = 0;
 MST mst;
+void drawPoint();
+void addPoint();
+void clear();
+void read_file(string& filename);
+void basic_mst();
+void triangulation_mst();
+void display();
+void init();
+void reshape(int w, int h);
+void mouse(int button, int state, int x, int y);
+void keyboard(unsigned char key, int x, int y);
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize (800, 600); 
+    glutInitWindowPosition (100, 100);
+    glutCreateWindow (argv[0]);
+    if (argc > 1) 
+        filename = string(argv[1]);
+    if (argc > 2)
+        paint_voi = true;
+    init();
+    glutDisplayFunc(display); 
+    glutReshapeFunc(reshape); 
+    glutMouseFunc(mouse);
+    glutKeyboardFunc(keyboard);
+    glutMainLoop();
+    return 0;
+}
+
+//画点
 void drawPoint()
 {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -33,40 +65,35 @@ void drawPoint()
     glColor3f( 1.0, 1.0, 1.0 );
     glPointSize(3);
     glBegin(GL_POINTS);
-    for( iter = vertices.begin(); iter != vertices.end(); iter++ ) {
+    for( iter = vertices.begin(); iter != vertices.end(); iter++ ) 
         glVertex2i( iter->hx(), iter->hy() );
-//        std::cout << iter->hx() << ' ' << iter->hy() << std::endl;
-    }
     glEnd();
     
     glPopMatrix();
     glutSwapBuffers();
 }
-
-void addPoint( int x, int y )
-{
+//添加点
+void addPoint( int x, int y ) {
     vertices.push_back( Point( x, global_h-y ) );
 }
-
-void clear()
-{
+//清楚所有数据
+void clear() {
     glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix();
     glPopMatrix();
     glutSwapBuffers();
-    mst.vertices.clear();
-    mst.tree_edges.clear();
-    mst.edges.clear();
+    mst.clean();
     vertices.clear();
     mst_state = 0;
 }
-
-void read_file(string& filename)
-{
+//read from file
+void read_file(string& filename) {
 
     std::ifstream in("../testcases/" + filename, std::ios::in);
-    if (!in) 
+    if (!in) {
         cout << 'can not read from file' << endl;
+        exit(0);
+    }
     int a, b, num;
     in >> num;
     for (int i = 0; i < num; i++) {
@@ -74,7 +101,7 @@ void read_file(string& filename)
         vertices.push_back(Point(a, b));
     }
 }
-
+//用原图做最小生成树
 void basic_mst() {
     //清空操作
     glClear(GL_COLOR_BUFFER_BIT);
@@ -88,20 +115,18 @@ void basic_mst() {
     for (int i = 0; i < vertices.size(); i++) {
         mst.add_vertex(vertices[i].hx(), vertices[i].hy());
     }
-    for (int i = 0; i < mst.vertices.size(); i++)
-        for (int j = i+1; j < mst.vertices.size(); j++)
-            mst.edges.push_back(MST::Edge(i, j, mst.vertices));
+    int vertex_num = mst.vertex_num();
+    for (int i = 0; i < vertex_num; i++)
+        for (int j = i+1; j < vertex_num; j++)
+            mst.add_edge(i, j);
     mst.Kruscal();
     mst.paint();
     //将MST中数据清除
-    mst.vertices.clear();
-    mst.edges.clear();
-    mst.tree_edges.clear();
-    
+    mst.clean();
     glPopMatrix();
     glutSwapBuffers();
 }
-
+//用三角剖分求最小生成树
 void triangulation_mst() {
     glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix();
@@ -135,9 +160,7 @@ void triangulation_mst() {
     mst.Kruscal();
     mst.paint();
     //将MST中数据清除
-    mst.vertices.clear();
-    mst.edges.clear();
-    mst.tree_edges.clear();
+    mst.clean();
     if (paint_voi) {
         Delaunay::Edge_iterator eit;//遍历Delaunay的所有边，绘制Delaunay图的对偶图，即Voronoi图
         
@@ -173,14 +196,13 @@ void triangulation_mst() {
     mst_state = 1;//完成最小生成树，置状态为1
 }
 
-void display(void) {
-}
-
-void init(void) {
+void display() {}
+//初始化界面
+void init() {
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel (GL_FLAT);
 }
-
+//窗口大小变动
 void reshape(int w, int h) {
     global_w = w;
     global_h = h;
@@ -194,7 +216,7 @@ void reshape(int w, int h) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
-
+//鼠标事件
 void mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
         addPoint(x,y);
@@ -207,7 +229,7 @@ void mouse(int button, int state, int x, int y) {
             triangulation_mst();
     }
 }
-
+//键盘事件
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
         case 27:
@@ -232,23 +254,4 @@ void keyboard(unsigned char key, int x, int y) {
     }
 }
 
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize (800, 600); 
-    glutInitWindowPosition (100, 100);
-    glutCreateWindow (argv[0]);
-    if (argc > 1) 
-        filename = "testcase" + string(argv[1]) + ".txt";
-    if (argc > 2)
-        paint_voi = true;
-    init();
-    glutDisplayFunc(display); 
-    glutReshapeFunc(reshape); 
-    glutMouseFunc(mouse);
-    glutKeyboardFunc(keyboard);
-    glutMainLoop();
-
-    return 0;
-}
 

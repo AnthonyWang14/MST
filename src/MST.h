@@ -4,7 +4,7 @@
 #include <vector>
 
 class MST {
-public:
+private:
     struct Vertex;
     struct Edge;
     std::vector<Vertex> vertices;
@@ -28,6 +28,7 @@ public:
             length2 = dx*dx + dy*dy;
         }
     };
+public:
     //边排序的比较函数
     static bool cmp(const Edge& e1, const Edge& e2) {
         return e1.length2 < e2.length2;
@@ -37,6 +38,8 @@ public:
     void paint();
     void Kruscal();
     int find_connect(int x);
+    void clean();
+    inline int vertex_num() { return vertices.size(); }
 };
 
 #endif
