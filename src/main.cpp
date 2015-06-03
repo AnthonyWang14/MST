@@ -64,7 +64,7 @@ void clear()
 void read_file(string& filename)
 {
 
-    std::ifstream in("../testcase/" + filename, std::ios::in);
+    std::ifstream in("../testcases/" + filename, std::ios::in);
     if (!in) 
         cout << 'can not read from file' << endl;
     int a, b, num;
